@@ -1,6 +1,7 @@
 import React from 'react'
-import { searchQueryAtom } from '../States/TSAtoms'
-import { useAtom }from 'jotai'
+import { searchQueryAtom,searchResultsAtom } from '../States/TSAtoms'
+import { useAtom } from 'jotai'
+import RenderResults from './results.tsx'
 
 const BASE_URL = 'https://api.themoviedb.org/3/search/movie?query='
 const API_KEY = import.meta.env.VITE_MOVIE_API_KEY
@@ -9,7 +10,7 @@ const API_OPS = {method: 'GET'}
 const SearchBar = () => {
 
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom)
-
+  const [searchResults, setSearchResults] = useAtom(searchResultsAtom)
   const handleSearch = async () => {
     try {
       const response = await fetch(`${BASE_URL}${searchQuery}&api_key=${API_KEY}`, API_OPS)
@@ -17,7 +18,8 @@ const SearchBar = () => {
       if (!response.ok) {
         throw new Error(data.status_message || 'Failed to fetch search results')
       }
-      console.log('Search results:', data)
+
+      setSearchResults(data.results)
       if (data.results.length === 0) {
         console.log('No results found for:', searchQuery)
       }
@@ -30,7 +32,7 @@ const SearchBar = () => {
     if (searchQuery.trim() !== '') {
       handleSearch()
     }
-  }, [searchQuery])
+  }, [searchQuery,searchResults])
 
   return (
     <>
@@ -45,6 +47,7 @@ const SearchBar = () => {
         className="bg-transparent outline-none border-none w-full"/>
       </div>
       <h1 className="text-white text-2xl font-bold mb-4">{searchQuery || "Search Results"}</h1>
+      <RenderResults />
     </>
   )
 }
