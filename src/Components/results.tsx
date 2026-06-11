@@ -1,15 +1,8 @@
 import { useAtomValue } from 'jotai'
 import { searchResultsAtom, isLoadingAtom, searchQueryAtom } from '../States/TSAtoms'
+import type { SearchResult } from '../States/TSAtoms'
 import { Spinner } from 'flowbite-react'
 
-type MovieResult = {
-  id: number
-  title: string
-  release_date: string
-  poster_path: string | null
-  vote_average: number
-  original_language: string
-}
 
 const RenderResults = () => {
     const searchQuery = useAtomValue(searchQueryAtom)
@@ -43,12 +36,15 @@ const RenderResults = () => {
         </div>
       )}
       <section className="container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1 mx-2.5">
-        {searchResults.map((result: MovieResult) => (
-          <div key={result.id} className="bg-slate-800 rounded-lg overflow-hidden">
+        {searchResults.map((result: SearchResult) => (
+          <div key={`${result.media_type}-${result.id}`} className="bg-slate-800 rounded-lg overflow-hidden">
             <img src={result.poster_path ? `https://image.tmdb.org/t/p/w500${result.poster_path}` : '/no-movie.png'} alt={result.title} 
             className="w-full h-45 cursor-pointer" />
         <div className="p-4">
-          <h2 className="text-white text-lg font-bold">{result.title}</h2> 
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <h2 className="text-white text-md font-bold text-pretty">{result.title}</h2>
+            <span className="text-xs uppercase tracking-wider text-slate-400">{result.media_type}</span>
+          </div>
           <div className="flex justify-items-center gap-0.5 items-center text-white">
             <div className="flex items-center gap-0.5 justify-center">
               <img src="/star.svg" alt="rating" className="w-5 h-5 cursor-pointer" />

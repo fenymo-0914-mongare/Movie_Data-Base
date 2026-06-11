@@ -13,6 +13,20 @@ const API_OPS = {
   }
 }
 
+const normalizeResults = (items: any[]) => {
+  return items
+    .filter((item) => item.media_type === 'movie' || item.media_type === 'tv')
+    .map((item) => ({
+      id: item.id,
+      media_type: item.media_type,
+      title: item.title || item.name || 'Untitled',
+      release_date: item.release_date || item.first_air_date || '',
+      poster_path: item.poster_path ?? null,
+      vote_average: item.vote_average ?? 0,
+      original_language: item.original_language || '-'
+    }))
+}
+
 const SearchBar = () => {
 
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom)
@@ -23,7 +37,10 @@ const SearchBar = () => {
 
   useDebounce(() => setDebouncedSearchQuery(searchQuery), 1000, [searchQuery])
 
-  const endPoint = searchQuery.trim() === '' ? 'discover/movie?sort_by=popularity.desc&' : `search/movie?query=${encodeURIComponent(searchQuery)}&`
+  const endPoint =
+    searchQuery.trim() === ''
+      ? 'trending/all/week?language=en-US&'
+      : `search/multi?query=${encodeURIComponent(searchQuery)}&language=en-US&include_adult=false&`
 
   const handleSearch = async () => {
     setIsLoading(true)
@@ -35,8 +52,9 @@ const SearchBar = () => {
         throw new Error(data.status_message || 'Failed to fetch search results')
       }
 
-      setSearchResults(data.results)
-      if (data.results.length === 0) {
+      const normalized = normalizeResults(data.results || [])
+      setSearchResults(normalized)
+      if (normalized.length === 0) {
         setError(`No results found for: ${searchQuery}`)
       }
     } catch (error) {
